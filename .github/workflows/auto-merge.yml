@@ -1,6 +1,6 @@
 name: Habilitar Auto-merge automáticamente
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - synchronize
