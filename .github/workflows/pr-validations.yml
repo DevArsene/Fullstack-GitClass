@@ -1,0 +1,73 @@
+name: Validar Estudiantes PR
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  pr-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 es necesario para poder comparar todos los archivos modificados en el PR
+          fetch-depth: 0
+          
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Comprobar qué archivos han sido modificados
+        id: files
+        uses: tj-actions/changed-files@v44
+        
+      - name: Validar Autoría Estrícta (Zero-Trust)
+        shell: bash
+        env:
+          ACTOR: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          FILES: ${{ steps.files.outputs.all_changed_files }}
+        run: |
+          echo "Autor del PR: $ACTOR"
+          
+          # Nos aseguramos de que el profesor (dueño del repositorio) no sea bloqueado
+          # a la hora de hacer PRs globales o mantenciones.
+          if [[ "$ACTOR" == "$OWNER" ]]; then
+            echo "Propietario del repositorio detectado. Reglas de integridad de archivos deshabilitadas."
+            exit 0
+          fi
+          
+          # Convertimos ambos a minúscula para asegurarnos que la validación sea segura y consistente (Github names no son case-sensitive)
+          ACTOR_LOWER=$(echo "$ACTOR" | tr '[:upper:]' '[:lower:]')
+          EXPECTED_FILE="src/collaborators/${ACTOR_LOWER}.json"
+          
+          for file in $FILES; do
+            # Convierte el archivo evaluado a minúsculas
+            FILE_LOWER=$(echo "$file" | tr '[:upper:]' '[:lower:]')
+
+            # Verificar si el archivo modificado está en la carpeta de colaboradores.
+            if [[ "$FILE_LOWER" == src/collaborators/* ]]; then
+              
+              # Si está dentro de la carpeta, obligatoriamente su nombre tiene que ser tu propio "usuario_github.json"
+              if [[ "$FILE_LOWER" != "$EXPECTED_FILE" ]]; then
+                echo "::error title=Autoría Denegada::❌ RECHAZADO: Intentaste modificar o subir '$file', pero tu cuenta que abre el PR es '$ACTOR'."
+                echo "::error title=Qué debes modificar::Solo tienes permitido crear tu propio archivo: '$EXPECTED_FILE'."
+                exit 1
+              fi
+              
+            else
+              # Si el estudiante intenta tocar la lógica de React, los estilos, Readme, o los test para burlarlos... Falla.
+              echo "::error title=Violación de Privilegios::❌ RECHAZADO: Intentaste modificar '$file'. Como estudiante, no tienes permitido tocar los archivos centrales del repositorio."
+              exit 1
+            fi
+          done
+          
+      - name: Instalar Dependencias (Limpio)
+        run: npm ci
+        
+      - name: Ejecutar Pruebas Automatizadas (Vitest)
+        run: npm run test -- --run
