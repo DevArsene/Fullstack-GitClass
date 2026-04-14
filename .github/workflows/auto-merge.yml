@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Activar Auto-merge mediante GitHub CLI
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         # El comando gh activa el auto-merge en modo "merge" tradicional. 
         # Si prefieres squash, cambia --merge por --squash
