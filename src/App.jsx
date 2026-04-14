@@ -7,6 +7,7 @@ const jsonFiles = import.meta.glob('./collaborators/*.json', { eager: true });
 
 function App() {
   const [collaborators, setCollaborators] = useState([]);
+  const [filter, setFilter] = useState('Todas');
 
   useEffect(() => {
     // Almacena los colaboradores excluyendo la plantilla
@@ -16,6 +17,13 @@ function App() {
     
     setCollaborators(loadedCollaborators);
   }, []);
+
+  const uniqueSections = [...new Set(collaborators.map(c => c.Seccion).filter(Boolean))].sort();
+  const availableSections = ['Todas', ...uniqueSections];
+
+  const filteredCollaborators = filter === 'Todas' 
+    ? collaborators 
+    : collaborators.filter(c => c.Seccion === filter);
 
   return (
     <div className="app-container">
@@ -34,9 +42,26 @@ function App() {
       </header>
 
       <main className="app-main">
+        {collaborators.length > 0 && (
+          <div className="filter-container">
+            <span className="filter-label">Filtrar por Sección:</span>
+            <div className="filter-buttons">
+              {availableSections.map(sec => (
+                <button 
+                  key={sec} 
+                  className={`filter-btn ${filter === sec ? 'active' : ''}`}
+                  onClick={() => setFilter(sec)}
+                >
+                  {sec}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="collaborators-grid">
-          {collaborators.length > 0 ? (
-            collaborators.map((collab, index) => (
+          {filteredCollaborators.length > 0 ? (
+            filteredCollaborators.map((collab, index) => (
               <CollaboratorCard key={index} data={collab} />
             ))
           ) : (

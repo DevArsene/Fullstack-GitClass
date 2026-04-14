@@ -15,6 +15,18 @@ describe('Collaborators JSON Format', () => {
     expect(studentFiles.length).toBeGreaterThan(0);
   });
 
+  describe('Integridad de la Plantilla Core', () => {
+    it('el archivo _plantilla.json debe existir intacto y no debe ser modificado por los alumnos', () => {
+      const templatePath = path.join(collaboratorsDir, '_plantilla.json');
+      const exists = fs.existsSync(templatePath);
+      expect(exists).toBe(true, 'CRÍTICO: Alguien ha borrado o renombrado el archivo _plantilla.json');
+      
+      const data = JSON.parse(fs.readFileSync(templatePath, 'utf-8'));
+      expect(data.nombre_completo).toBe('Tu Nombre y Apellido', 'La plantilla fue alterada en su nombre');
+      expect(data.usuario_github).toBe('tu-usuario-de-github', 'La plantilla fue alterada en su usuario');
+    });
+  });
+
   // Lista negra de palabras ofensivas, racistas o figuras polémicas
   const forbiddenWords = [
     // Figuras polémicas / Ideologías del odio
@@ -81,11 +93,16 @@ describe('Collaborators JSON Format', () => {
         expect(typeof data.comentario_libre).toBe('string');
         expect(data.comentario_libre.length).toBeLessThanOrEqual(150, 'El comentario debe tener 150 caracteres o menos');
 
-        // Validar Sección
+        // Validar Sección según reglas estrictas de autorización
         expect(data).toHaveProperty('Seccion');
         expect(typeof data.Seccion).toBe('string');
-        const validSections = ['001D', '003D', 'Profesor', '001D o 003D'];
-        expect(validSections).toContain(data.Seccion);
+        
+        if (file.toLowerCase() === 'ericramirezs.json') {
+          expect(data.Seccion).toBe('Profesor', 'El perfil de Eric Ramirez debe tener el distintivo de "Profesor"');
+        } else {
+          const validStudentSections = ['001D', '003D'];
+          expect(validStudentSections).toContain(data.Seccion, `La Sección es inválida. Solo se admite '001D' o '003D'. Recibido: ${data.Seccion}`);
+        }
       });
 
       it('no debe contener lenguaje ofensivo, racista, xenófobo ni menciones a figuras polémicas', () => {

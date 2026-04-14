@@ -91,6 +91,51 @@ body {
   width: 100%;
 }
 
+/* Filter components */
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-weight: 600;
+  color: #002855;
+  font-size: 1.1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background-color: #F4F4F4;
+  border: 2px solid transparent;
+  color: #333333;
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.filter-btn:hover {
+  background-color: #e2e2e2;
+}
+
+.filter-btn.active {
+  background-color: #002855;
+  color: #FFFFFF;
+  border-color: #002855;
+  box-shadow: 0 4px 6px rgba(0,40,85,0.2);
+}
+
 /* Collaborators Grid */
 .collaborators-grid {
   display: grid;
