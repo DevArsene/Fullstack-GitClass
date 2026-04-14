@@ -163,15 +163,17 @@ function App() {
               <div className="filter-container">
                 <span className="filter-label">Filtrar por Sección:</span>
                 <div className="filter-buttons">
-                  {availableSections.map(sec => (
-                    <button
-                      key={sec}
-                      className={`filter-btn ${filter === sec ? 'active' : ''}`}
-                      onClick={() => setFilter(sec)}
-                    >
-                      {sec}
-                    </button>
-                  ))}
+                  {availableSections
+                    .filter(sec => sec !== "Profesor")
+                    .map(sec => (
+                      <button
+                        key={sec}
+                        className={`filter-btn ${filter === sec ? 'active' : ''}`}
+                        onClick={() => setFilter(sec)}
+                      >
+                        {sec}
+                      </button>
+                    ))}
                 </div>
               </div>
             )}
